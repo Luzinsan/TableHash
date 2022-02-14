@@ -1,43 +1,109 @@
 #include <iostream>
 #include <fstream>
 #include <exception>
-#include <vector>
+#include <conio.h>
 #include "HashTable.h"
-// РќР°РїРёСЃР°С‚СЊ РїСЂРѕРіСЂР°РјРјСѓ, 
-// РєРѕС‚РѕСЂР°СЏ СЂРµР°Р»РёР·СѓРµС‚ РјРµС‚РѕРґ Р·Р°РєСЂС‹С‚РѕРіРѕ С…РµС€РёСЂРѕРІР°РЅРёСЏ 
-// СЃ РєРІР°РґСЂР°С‚РёС‡РЅРѕР№ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊСЋ РїСЂРѕР± 
-// Рё С…РµС€ - С„СѓРЅРєС†РёРµР№, РѕСЃРЅРѕРІР°РЅРЅРѕР№ РЅР° РјРµС‚РѕРґРµ РґРµР»РµРЅРёСЏ СЃ РѕСЃС‚Р°С‚РєРѕРј.
+#include <windows.h>
+// Написать программу, 
+// которая реализует метод закрытого хеширования 
+// с квадратичной последовательностью проб 
+// и хеш - функцией, основанной на методе деления с остатком.
 // 
-// РҐРµС€ - С‚Р°Р±Р»РёС†Р° РѕСЂРёРµРЅС‚РёСЂРѕРІР°РЅР° РЅР° С…СЂР°РЅРµРЅРёРµ СЃРёРјРІРѕР»СЊРЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё.
-// Р”Р°РЅРЅС‹Рµ РІ С…РµС€ - С‚Р°Р±Р»РёС†Сѓ Р·Р°РЅРѕСЃСЏС‚СЃСЏ РёР· С„Р°Р№Р»Р°.
-// Р¤Р°Р№Р» РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РЅРµ РјРµРЅРµРµ 15 СЃР»РѕРІ.
+// Хеш - таблица ориентирована на хранение символьной информации.
+// Данные в хеш - таблицу заносятся из файла.
+// Файл должен содержать не менее 15 слов.
 // 
-// Р’С‹РІРµСЃС‚Рё РїРѕСЃС‚СЂРѕРµРЅРЅСѓСЋ С…РµС€ - С‚Р°Р±Р»РёС†Сѓ РЅР° СЌРєСЂР°РЅ
-// (РІРјРµСЃС‚Рµ СЃ РєРѕР»РёС‡РµСЃС‚РІРѕРј РІС‹РїРѕР»РЅРµРЅРЅС‹С… РїСЂРѕР±).
+// Вывести построенную хеш - таблицу на экран
+// (вместе с количеством выполненных проб).
 // 
-// РћСЂРіР°РЅРёР·РѕРІР°С‚СЊ РїРѕРёСЃРє Рё СѓРґР°Р»РµРЅРёРµ РґР°РЅРЅС‹С… РІ С…РµС€ - С‚Р°Р±Р»РёС†Рµ.
+// Организовать поиск и удаление данных в хеш - таблице.
 // 
-// Р РµР·СѓР»СЊС‚Р°С‚С‹ РїРѕРёСЃРєР° РґР°РЅРЅС‹С… РІС‹РІРµСЃС‚Рё РЅР° СЌРєСЂР°РЅ.
+// Результаты поиска данных вывести на экран.
 // 
-// РўР°РєР¶Рµ РІС‹РІРµСЃС‚Рё РєРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРѕР±, РєРѕС‚РѕСЂС‹Рµ Р±С‹Р»Рё Р·Р°С‚СЂР°С‡РµРЅС‹ РїСЂРё РїРѕРёСЃРєРµ.
-
+// Также вывести количество проб, которые были затрачены при поиске.
+char getSymbol(std::initializer_list<char> list,
+    std::string notification_message = "",
+    std::string error_message = "Недопустимое значение, попробуйте ещё раз.\n->");
 
 int main()
 {
-    setlocale(LC_ALL, "rus");
+    SetConsoleOutputCP(1251);
+    SetConsoleCP(1251);
     std::string filename;
     filename = "input.txt";
     std::ifstream fin(filename);
-    if (!fin) 
-        throw std::exception((filename + " РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚РєСЂС‹С‚ Р»РёР±Рѕ РЅРµ РЅР°Р№РґРµРЅ\n").c_str());
-    
-	HashTable T;
-	while (fin)
-	{
-		fin >> T;
-	}
-    filename = "output.txt";
-    std::ofstream fout(filename);
+    if (!fin)
+        throw std::exception((filename + " не может быть открыт либо не найден\n").c_str());
+
+    HashTable T;
+    while (fin)
+        fin >> T;
+    fin.close();
     std::cout << T;
-    
+
+    filename = "output.txt";
+    char choice;
+    while (true)
+    {
+        choice = getSymbol({ '1','2','3','4','5' },
+            "Выберите действие:\n1) просмотреть хеш-таблицу\n2) вставить слово в хеш-таблицу\n3) удалить слово из хеш-таблицы\n4) найти индекс слова в хеш-таблице\n5) напечатать хеш-таблицу в файле output.txt\n6) выйти из программы\n-> ");
+        if (choice == '6') break;
+
+        switch (choice)
+        {
+        case '1':
+            std::cout << T;
+            break;
+        case '2':
+        {
+            std::cout << "Введите слово: ";
+            std::string newword;
+            std::cin >> newword;
+            T.insert(std::move(newword));
+            break;
+        }
+        case '3':
+        {
+            std::cout << "Введите слово: ";
+            std::string delword;
+            std::cin >> delword;
+            T.del(delword);
+            break;
+        }
+        case '4':
+        {
+            std::cout << "Введите слово: ";
+            std::string indword;
+            std::cin >> indword;
+            T.search(indword);
+            break;
+        }
+        case '5':
+        {
+            std::ofstream fout(filename, 'a');
+            fout << T;
+            fout.close();
+            break; 
+        }
+        default: std::cerr << "Упс, что-то пошло нет так...";
+        }
+    }
+}
+char getSymbol(std::initializer_list<char> list,
+    std::string notification_message,
+    std::string error_message)
+{
+    char choice = NULL;
+    std::cout << notification_message;
+
+    bool flag = true;
+    do {
+        choice = _getche();
+        std::cout << std::endl;
+        for (auto it = list.begin(); it != list.end(); it++)
+            if (it[0] == choice) { flag = false; break; }
+
+        if (flag) std::cerr << error_message;
+    } while (flag);
+    return choice;
 }
