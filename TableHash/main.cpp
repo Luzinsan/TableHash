@@ -2,6 +2,7 @@
 #include <fstream>
 #include <exception>
 #include <conio.h>
+#include <string>
 #include "HashTable.h"
 #include <windows.h>
 // Написать программу, 
@@ -24,71 +25,93 @@
 char getSymbol(std::initializer_list<char> list,
     std::string notification_message = "",
     std::string error_message = "Недопустимое значение, попробуйте ещё раз.\n->");
+std::streambuf* redirectInput(std::ifstream* fin = NULL);
+std::streambuf* redirectOutput(std::ofstream* fout = NULL);
 
 int main()
 {
     SetConsoleOutputCP(1251);
     SetConsoleCP(1251);
-    std::string filename;
-    filename = "input.txt";
-    std::ifstream fin(filename);
-    if (!fin)
-        throw std::exception((filename + " не может быть открыт либо не найден\n").c_str());
-
-    HashTable T;
-    while (fin)
-        fin >> T;
-    fin.close();
-    std::cout << T;
-
-    filename = "output.txt";
     char choice;
-    while (true)
-    {
-        choice = getSymbol({ '1','2','3','4','5' },
-            "Выберите действие:\n1) просмотреть хеш-таблицу\n2) вставить слово в хеш-таблицу\n3) удалить слово из хеш-таблицы\n4) найти индекс слова в хеш-таблице\n5) напечатать хеш-таблицу в файле output.txt\n6) выйти из программы\n-> ");
-        if (choice == '6') break;
+    HashTable T;
+    
+    do {
+        choice = getSymbol({ '1','2','3','4' },
+            "Введите способ ввода и вывода данных:\n1) с клавиатуры;\n2) из файла\n3) стандартный (из файла input.txt в файл output.txt)\n4) завершить программу\n-> ");
+        if (choice == '4') break;
+        
+        std::string filein("input.txt");
+        std::string fileout("output.txt");
+        if (choice == '2') 
+        {
+            std::cout << "Введите имя входного файла:\n->";
+            getline(std::cin, filein);
+            std::cout << "Введите имя выходного файла:\n->";
+            getline(std::cin, fileout);
+        }
+        
+        std::ofstream fout;
+        std::streambuf* original_stream = NULL;
+        if (choice == '2' || choice == '3') 
+        {
+            std::ifstream fin(filein);
+            original_stream = redirectInput(&fin);
+            if (!original_stream) { choice = '4'; break; }
+            while (fin)
+                fin >> T;
 
-        switch (choice)
-        {
-        case '1':
-            std::cout << T;
-            break;
-        case '2':
-        {
-            std::cout << "Введите слово: ";
-            std::string newword;
-            std::cin >> newword;
-            T.insert(std::move(newword));
-            break;
+            std::cin.rdbuf(original_stream);
+            fin.close();
+            original_stream = redirectOutput(&fout);
+            if (!original_stream) { choice = '4'; break; }
         }
-        case '3':
+           
+       
+        char choice;
+        while (true)
         {
-            std::cout << "Введите слово: ";
-            std::string delword;
-            std::cin >> delword;
-            T.del(delword);
-            break;
+            system("cls");
+            choice = getSymbol({ '1','2','3','4','5'},
+                "Выберите действие:\n1) просмотреть хеш-таблицу\n2) вставить слово в хеш-таблицу\n3) удалить слово из хеш-таблицы\n4) найти индекс слова в хеш-таблице\n5) выйти из программы\n-> ");
+            if (choice == '5') break;
+
+            switch (choice)
+            {
+            case '1':
+                std::cout << T;
+                break;
+            case '2':
+            {
+                std::cout << "Введите слово: ";
+                std::string newword;
+                std::cin >> newword;
+                T.insert(std::move(newword));
+                break;
+            }
+            case '3':
+            {
+                std::cout << "Введите слово: ";
+                std::string delword;
+                std::cin >> delword;
+                T.del(std::move(delword));
+                break;
+            }
+            case '4':
+            {
+                std::cout << "Введите слово: ";
+                std::string indword;
+                std::cin >> indword;
+                std::cout << T.search(std::move(indword)) << " <- индекс элемента" << std::endl;
+                break;
+            }
+            default: std::cerr << "Упс, что-то пошло нет так...";
+            }
+            system("pause");
         }
-        case '4':
-        {
-            std::cout << "Введите слово: ";
-            std::string indword;
-            std::cin >> indword;
-            T.search(indword);
-            break;
-        }
-        case '5':
-        {
-            std::ofstream fout(filename, 'a');
-            fout << T;
-            fout.close();
-            break; 
-        }
-        default: std::cerr << "Упс, что-то пошло нет так...";
-        }
-    }
+        if(choice == '2' || choice == '3') std::cout.rdbuf(original_stream);
+    } while (true);
 }
+
 char getSymbol(std::initializer_list<char> list,
     std::string notification_message,
     std::string error_message)
@@ -106,4 +129,48 @@ char getSymbol(std::initializer_list<char> list,
         if (flag) std::cerr << error_message;
     } while (flag);
     return choice;
+}
+
+std::streambuf* redirectInput(std::ifstream* fin)
+{
+    std::streambuf* original_cin = std::cin.rdbuf();
+    while (!*fin)
+    {
+        std::string filename;
+        char choice;
+        choice = getSymbol({ '1', '2' },
+            "Данный файл не может быть открыт, либо не существует. Попробовать ещё раз?\n1) да\n2) выйти\n->");
+        if (choice == '1')
+        {
+            std::cout << "Введите имя файла:\n->";
+            getline(std::cin, filename);
+        }
+        else return NULL;
+        fin->open(filename);
+    }
+    //перенаправляем стандартный поток ввода на переданный файл
+    std::cin.rdbuf(fin->rdbuf());
+    return original_cin;
+}
+
+std::streambuf* redirectOutput(std::ofstream* fout)
+{
+    std::streambuf* original_cout = std::cout.rdbuf();
+    while (!*fout)
+    {
+        std::string filename;
+        char choice;
+        choice = getSymbol({ '1', '2' },
+            "Данный файл не может быть открыт, либо не существует. Попробовать ещё раз?\n1) да\n2) выйти\n->");
+        if (choice == '1')
+        {
+            std::cout << "Введите имя файла:\n->";
+            getline(std::cin, filename);
+        }
+        else return NULL;
+        fout->open(filename);
+    }
+    //перенаправляем стандартный поток вывода на переданный файл
+    std::cout.rdbuf(fout->rdbuf());
+    return original_cout;
 }

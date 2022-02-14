@@ -69,7 +69,6 @@ public:
 			_table[index].first = "";
 			_table[index].second = false;
 		}
-		else std::cerr << "Данное слово не найдено в хеш-таблице";
 		return *this;
 	}
 	int search(std::string string)
@@ -84,6 +83,7 @@ public:
 			}
 			i++;
 		} while ((_table[index].first != "" || _table[index].second == false) && i < _table.size());
+		std::cerr << "Данное слово не найдено в хеш-таблице";
 		return INDEX_NOT_FOUND;
 	}
 
