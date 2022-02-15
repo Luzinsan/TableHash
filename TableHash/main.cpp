@@ -33,15 +33,26 @@ int main()
     SetConsoleOutputCP(1251);
     SetConsoleCP(1251);
     char choice;
-    HashTable T;
+    
     
     do {
+        system("cls");
         choice = getSymbol({ '1','2','3','4' },
             "Введите способ ввода и вывода данных:\n1) с клавиатуры;\n2) из файла\n3) стандартный (из файла input.txt в файл output.txt)\n4) завершить программу\n-> ");
+        //choice = '3';
         if (choice == '4') break;
+        HashTable T;
         
         std::string filein("input.txt");
         std::string fileout("output.txt");
+        int size = 25;
+        if (choice == '1') 
+        {
+            std::cout << "Введите размер хеш-таблицы:\n-> ";
+            std::cin >> size;
+            T.resize(size);
+            T.reserve(size);
+        }
         if (choice == '2') 
         {
             std::cout << "Введите имя входного файла:\n->";
@@ -51,30 +62,29 @@ int main()
         }
         
         std::ofstream fout;
+        fout.open(fileout);
         std::streambuf* original_stream = NULL;
         if (choice == '2' || choice == '3') 
         {
             std::ifstream fin(filein);
             original_stream = redirectInput(&fin);
             if (!original_stream) { choice = '4'; break; }
+            T.resize(size);
+            T.reserve(size);
             while (fin)
                 fin >> T;
 
             std::cin.rdbuf(original_stream);
             fin.close();
-            original_stream = redirectOutput(&fout);
-            if (!original_stream) { choice = '4'; break; }
         }
            
-       
         char choice;
         while (true)
         {
             system("cls");
-            choice = getSymbol({ '1','2','3','4','5'},
-                "Выберите действие:\n1) просмотреть хеш-таблицу\n2) вставить слово в хеш-таблицу\n3) удалить слово из хеш-таблицы\n4) найти индекс слова в хеш-таблице\n5) выйти из программы\n-> ");
-            if (choice == '5') break;
-
+            choice = getSymbol({ '1','2','3','4','5','6'},
+                "Выберите действие:\n1) просмотреть хеш-таблицу\n2) вставить слово в хеш-таблицу\n3) удалить слово из хеш-таблицы\n4) найти индекс слова в хеш-таблице\n5) напечатать хеш-таблицу в файле\n6) Завершить таблицу (не сохраняет в файл)\n-> ");
+           
             switch (choice)
             {
             case '1':
@@ -104,11 +114,21 @@ int main()
                 std::cout << T.search(std::move(indword)) << " <- индекс элемента" << std::endl;
                 break;
             }
+            case '5':
+                original_stream = redirectOutput(&fout);
+                if (!original_stream) break; 
+                std::cout << T;
+                std::cout.rdbuf(original_stream);
+                break;
+            case '6':
+                std::cout << T;
+                break;
             default: std::cerr << "Упс, что-то пошло нет так...";
             }
+            if (choice == '6') break;
             system("pause");
         }
-        if(choice == '2' || choice == '3') std::cout.rdbuf(original_stream);
+        system("pause");
     } while (true);
 }
 
@@ -152,7 +172,6 @@ std::streambuf* redirectInput(std::ifstream* fin)
     std::cin.rdbuf(fin->rdbuf());
     return original_cin;
 }
-
 std::streambuf* redirectOutput(std::ofstream* fout)
 {
     std::streambuf* original_cout = std::cout.rdbuf();

@@ -9,7 +9,6 @@ class HashTable
 {
 private:
 	std::vector<std::pair<std::string, bool>> _table;
-
 public:
 	HashTable() 
 	{
@@ -19,9 +18,14 @@ public:
 	{
 		return _table.size();
 	}
-	HashTable& resize(size_t size) 
+	HashTable& resize(size_t size)
 	{
 		_table.resize(size);
+		return *this;
+	}
+	HashTable& reserve(size_t capacity)
+	{
+		_table.reserve(capacity);
 		return *this;
 	}
 	
@@ -32,10 +36,10 @@ public:
 			stringInt += *it;
 		return stringInt;
 	}
-	unsigned hash(std::string element) const { return string_to_int(element) % _table.size(); }
-	unsigned hashLinear(std::string element, unsigned index) const { return (hash(element) + index) % _table.size();}
-	unsigned hashQuadratic(std::string element, unsigned index) const { return (hash(element) + index * index) % _table.size(); }
-	unsigned hashDouble(std::string element, unsigned index) const { return (hash(element) + index * (1 + hash(element))) % _table.size(); }
+	unsigned hash(std::string element) const { return string_to_int(element) % _table.capacity(); }
+	unsigned hashLinear(std::string element, unsigned index) const { return (hash(element) + index) % _table.capacity();}
+	unsigned hashQuadratic(std::string element, unsigned index) const { return (hash(element) + index * index) % _table.capacity(); }
+	unsigned hashDouble(std::string element, unsigned index) const { return (hash(element) + index * (1 + hash(element))) % _table.capacity(); }
 
 
 	const std::string& operator[](int index) const
@@ -46,9 +50,10 @@ public:
 	{
 		return _table[index].first;
 	}
+	
 	HashTable& insert(std::string string) 
 	{
-		for (int i = 0; i != _table.size(); i++)
+		for (int i = 0; i != _table.capacity(); i++)
 		{
 			int index = hashQuadratic(string, i);
 			if (_table[index].first == "")
@@ -59,7 +64,8 @@ public:
 				return *this;
 			}
 		}
-		_table.push_back(std::pair(string,true));
+		std::cout << "Таблица переполнена\n";
+		return *this;
 	}
 	HashTable& del(std::string string)
 	{
@@ -83,7 +89,7 @@ public:
 			}
 			i++;
 		} while ((_table[index].first != "" || _table[index].second == false) && i < _table.size());
-		std::cerr << "Данное слово не найдено в хеш-таблице";
+		std::cerr << "Данное слово не найдено в хеш-таблице\n";
 		return INDEX_NOT_FOUND;
 	}
 
