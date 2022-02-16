@@ -39,7 +39,6 @@ int main()
         system("cls");
         choice = getSymbol({ '1','2','3','4' },
             "¬ведите способ ввода и вывода данных:\n1) с клавиатуры;\n2) из файла\n3) стандартный (из файла input.txt в файл output.txt)\n4) завершить программу\n-> ");
-        //choice = '3';
         if (choice == '4') break;
         HashTable T;
         

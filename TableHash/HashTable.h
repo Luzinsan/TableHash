@@ -88,7 +88,7 @@ public:
 				return index;
 			}
 			i++;
-		} while ((_table[index].first != "" || _table[index].second == false) && i < _table.size());
+		} while ((i < _table.capacity()) && (_table[index].first != "" || _table[index].second == false));
 		std::cerr << "Данное слово не найдено в хеш-таблице\n";
 		return INDEX_NOT_FOUND;
 	}
