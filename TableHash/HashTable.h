@@ -32,14 +32,14 @@ public:
 	static unsigned string_to_int(std::string string)
 	{
 		unsigned stringInt = 0;
-		for (auto it = string.begin(); it != string.end(); it++)
-			stringInt += *it;
+ 		for (auto it = string.begin(); it != string.end(); it++)
+			stringInt += (unsigned char)*it;
 		return stringInt;
 	}
 	unsigned hash(std::string element) const { return string_to_int(element) % _table.capacity(); }
-	unsigned hashLinear(std::string element, unsigned index) const { return (hash(element) + index) % _table.capacity();}
-	unsigned hashQuadratic(std::string element, unsigned index) const { return (hash(element) + index * index) % _table.capacity(); }
-	unsigned hashDouble(std::string element, unsigned index) const { return (hash(element) + index * (1 + hash(element))) % _table.capacity(); }
+	unsigned hashLinear(unsigned hash, unsigned index) const { return (hash + index) % _table.capacity();}
+	unsigned hashQuadratic(unsigned hash, unsigned index) const { return (hash + index * index) % _table.capacity(); }
+	unsigned hashDouble(unsigned hash, unsigned index) const { return (hash + index * (1 + hash)) % _table.capacity(); }
 
 
 	const std::string& operator[](int index) const
@@ -53,18 +53,19 @@ public:
 	
 	HashTable& insert(std::string string) 
 	{
-		for (int i = 0; i != _table.capacity(); i++)
+		int hash_i = hash(string), index;
+ 		for (int i = 0; i != _table.capacity(); i++)
 		{
-			int index = hashQuadratic(string, i);
+			index = hashQuadratic(hash_i, i);
 			if (_table[index].first == "")
 			{
 				_table[index].first = string;
 				_table[index].second = true;
-				std::cout << "Количество проб: " << i << std::endl;
+				std::cout << "РљРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРѕР±: " << i << std::endl;
 				return *this;
 			}
 		}
-		std::cout << "Таблица переполнена\n";
+		std::cout << "РўР°Р±Р»РёС†Р° РїРµСЂРµРїРѕР»РЅРµРЅР°\n";
 		return *this;
 	}
 	HashTable& del(std::string string)
@@ -79,17 +80,17 @@ public:
 	}
 	int search(std::string string)
 	{
-		int index, i = 0;
+		int index, i = 0, hash_i = hash(string);
 		do {
-			index = hashQuadratic(string, i);
+			index = hashQuadratic(hash_i, i);
 			if (_table[index].first == string)
 			{
-				std::cout << "Количество проб: " << i << std::endl;
+				std::cout << "РљРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРѕР±: " << i << std::endl;
 				return index;
 			}
 			i++;
 		} while ((i < _table.capacity()) && (_table[index].first != "" || _table[index].second == false));
-		std::cerr << "Данное слово не найдено в хеш-таблице\n";
+		std::cerr << "Р”Р°РЅРЅРѕРµ СЃР»РѕРІРѕ РЅРµ РЅР°Р№РґРµРЅРѕ РІ С…РµС€-С‚Р°Р±Р»РёС†Рµ\n";
 		return INDEX_NOT_FOUND;
 	}
 
